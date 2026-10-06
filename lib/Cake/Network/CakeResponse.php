@@ -1113,6 +1113,10 @@ class CakeResponse {
  * @return void
  */
 	public function download($filename) {
+		// Strip control characters: a CR/LF in the name makes PHP refuse to
+		// emit the whole header, which would silently drop the attachment
+		// disposition and let the body render inline.
+		$filename = preg_replace('/[\x00-\x1F\x7F]/', '', (string)$filename);
 		$this->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
 	}
 
