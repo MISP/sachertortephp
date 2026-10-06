@@ -1117,6 +1117,9 @@ class CakeResponse {
 		// emit the whole header, which would silently drop the attachment
 		// disposition and let the body render inline.
 		$filename = preg_replace('/[\x00-\x1F\x7F]/', '', (string)$filename);
+		// Escape the quoted-string so a quote in the name cannot inject extra
+		// Content-Disposition parameters.
+		$filename = addcslashes($filename, '"\\');
 		$this->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
 	}
 
