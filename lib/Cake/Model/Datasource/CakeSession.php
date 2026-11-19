@@ -578,6 +578,16 @@ class CakeSession {
 		if (empty($_SESSION) && !headers_sent() && (!function_exists('session_status') || session_status() !== PHP_SESSION_ACTIVE)) {
 			if (!empty($sessionConfig['ini']) && is_array($sessionConfig['ini'])) {
 				foreach ($sessionConfig['ini'] as $setting => $value) {
+					if ($setting === 'session.serialize_handler') {
+						$current = ini_get('session.serialize_handler');
+						// Don't switch a serialize handler that's already set to something
+						// else: session.upload_progress (on by default) may have written
+						// data in that handler's format before this point runs, and
+						// reading it back with a different one is an RCE (CVE-2026-115560).
+						if ($current !== false && $current !== '' && $current !== $value) {
+							continue;
+						}
+					}
 					if (ini_set($setting, $value) === false) {
 						throw new CakeSessionException(__d('cake_dev', 'Unable to configure the session, setting %s failed.', $setting));
 					}
